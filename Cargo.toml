@@ -1,0 +1,28 @@
+[package]
+name = "chatgpt"
+version = "0.0.0"
+edition = "2021"
+# build = "build.rs"
+
+[dependencies]
+env_logger = "0.9.0"
+log = "0.4.14"
+# convert_case = "0.6.0"
+
+# Import Tokio
+tokio = { version = "*", features = ["full"] }
+
+# Impord serde json
+serde = { version = "*", features = ["derive"] }
+serde_json = "*"
+
+# Import reqwest
+reqwest = { version = "*", features = ["json"] }
+
+[build-dependencies]
+convert_case = "0.6.0"
+# Impord serde json
+serde = { version = "*", features = ["derive"] }
+serde_json = "*"
+# Import reqwest
+reqwest = { version = "*", features = ["json", "blocking"] }
