@@ -2,6 +2,9 @@
 name = "chatgpt"
 version = "0.0.0"
 edition = "2021"
+license = "GPL-3.0"
+authors = ["Dave Beesley <david.beesley@pm.me>"]
+repository = "https://github.com/davidbeesley/chatgpt-client"
 # build = "build.rs"
 
 [dependencies]

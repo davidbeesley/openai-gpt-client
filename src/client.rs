@@ -1,7 +1,7 @@
 use log::info;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE};
 use reqwest::{Client, Error, Response};
-use serde_json::{json, to_string, to_value};
+use serde_json::to_value;
 
 use crate::conversations::{TextCompletionRequest, TextCompletionResponse};
 use crate::model_variants::ModelId;
@@ -68,14 +68,12 @@ impl OpenAiClient {
         &self,
         model: ModelId,
         prompt: &str,
-        temperature: f64,
         max_tokens: i32,
     ) -> Result<TextCompletionResponse, Error> {
         // Create the request body as a TextCompletionRequest object
         let request_body = TextCompletionRequest {
             model,
             prompt: prompt.to_owned(),
-            temperature: Some(temperature),
             max_tokens: Some(max_tokens),
             ..Default::default()
         };
