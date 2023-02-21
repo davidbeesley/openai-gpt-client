@@ -5,6 +5,13 @@ use serde::Deserialize;
 use std::env;
 use std::fs::File;
 use std::io::Write;
+const PREFIX: &str = r#"
+#[derive(Debug, Copy, Clone, serde::Deserialize, serde::Serialize, Ord, PartialOrd, Eq, PartialEq, Hash)]
+pub enum ModelId {
+"#;
+
+const SUFFIX: &str = r#"
+}"#;
 
 #[derive(Debug, Deserialize)]
 struct Model {
@@ -80,11 +87,3 @@ fn generate_code(inputs: &[String]) -> String {
         .collect::<Vec<String>>()
         .join("\n")
 }
-
-const PREFIX: &str = r#"
-#[derive(Debug, serde::Deserialize, serde::Serialize, Ord, PartialOrd, Eq, PartialEq, Hash)]
-pub enum ModelId {
-"#;
-
-const SUFFIX: &str = r#"
-}"#;

@@ -3,9 +3,12 @@ use std::fmt::{Display, Formatter};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+use crate::model_variants::ModelId;
+
+#[serde_with::skip_serializing_none]
 #[derive(Debug, Default, Deserialize, Serialize)]
 pub struct TextCompletionRequest {
-    pub model: String,
+    pub model: ModelId,
     pub prompt: String,
     pub suffix: Option<String>,
     pub max_tokens: Option<i32>,

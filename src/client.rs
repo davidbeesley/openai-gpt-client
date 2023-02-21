@@ -1,7 +1,7 @@
 use log::info;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE};
 use reqwest::{Client, Error, Response};
-use serde_json::{json, to_value};
+use serde_json::{json, to_string, to_value};
 
 use crate::conversations::{TextCompletionRequest, TextCompletionResponse};
 use crate::model_variants::ModelId;
@@ -66,14 +66,14 @@ impl OpenAiClient {
 
     // pub async fn send_text(
     //     &self,
-    //     model: &ModelId,
+    //     model: ModelId,
     //     prompt: &str,
     //     temperature: f64,
     //     max_tokens: i32,
     // ) -> Result<TextCompletionResponse, Error> {
     //     // Create the request body as a TextCompletionRequest object
     //     let request_body = TextCompletionRequest {
-    //         model: model.to_string(),
+    //         model,
     //         prompt: prompt.to_owned(),
     //         temperature: Some(temperature),
     //         max_tokens: Some(max_tokens),
@@ -96,7 +96,7 @@ impl OpenAiClient {
     //
     pub async fn send_text(
         &self,
-        model: &ModelId,
+        model: ModelId,
         prompt: &str,
         temperature: i32,
         max_tokens: i32,
@@ -109,14 +109,26 @@ impl OpenAiClient {
             "max_tokens": max_tokens,
         });
 
+        let request_body_2 = to_value(&TextCompletionRequest {
+            model,
+            prompt: prompt.to_owned(),
+            temperature: Some(0.0),
+            max_tokens: Some(max_tokens),
+            ..Default::default()
+        })
+        .unwrap();
+
+        println!("request_body: {:#?}", request_body);
+        println!("request_body_2: {:#?}", request_body_2);
         // Send the request
-        let response = self
-            .client
-            .post("https://api.openai.com/v1/completions")
-            .header(CONTENT_TYPE, HeaderValue::from_static("application/json"))
-            .json(&request_body)
-            .send()
-            .await?;
+        // let response = self
+        //     .client
+        //     .post("https://api.openai.com/v1/completions")
+        //     .header(CONTENT_TYPE, HeaderValue::from_static("application/json"))
+        //     .json(&request_body)
+        //     .send()
+        //     .await?;
+        let response = self.post_request("completions", request_body_2).await?;
 
         // Get the response body
         let body = response.text().await?;

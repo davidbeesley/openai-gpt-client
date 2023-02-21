@@ -51,3 +51,9 @@ impl Display for ModelId {
         write!(f, "{:?}", self)
     }
 }
+
+impl Default for ModelId {
+    fn default() -> Self {
+        ModelId::TextAda001
+    }
+}

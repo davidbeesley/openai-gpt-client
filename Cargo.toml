@@ -15,6 +15,7 @@ tokio = { version = "*", features = ["full"] }
 # Impord serde json
 serde = { version = "*", features = ["derive"] }
 serde_json = "*"
+serde_with = "1.9.3"
 
 # Import reqwest
 reqwest = { version = "*", features = ["json"] }
