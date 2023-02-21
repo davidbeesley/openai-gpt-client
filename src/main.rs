@@ -17,7 +17,7 @@ async fn main() -> Result<(), Error> {
     let max_tokens = 1000;
 
     let res = client
-        .send_text(model, prompt, temperature as i32, max_tokens)
+        .send_text(model, prompt, temperature, max_tokens)
         .await?;
     println!("Response: {:#?}", res);
 
