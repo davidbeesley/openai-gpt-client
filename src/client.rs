@@ -1,7 +1,7 @@
 use log::info;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE};
 use reqwest::{Client, Error, Response};
-use serde_json::to_value;
+use serde_json::{json, to_value};
 
 use crate::conversations::{TextCompletionRequest, TextCompletionResponse};
 use crate::model_variants::ModelId;
@@ -64,33 +64,65 @@ impl OpenAiClient {
         Ok(model_list.data)
     }
 
+    // pub async fn send_text(
+    //     &self,
+    //     model: &ModelId,
+    //     prompt: &str,
+    //     temperature: f64,
+    //     max_tokens: i32,
+    // ) -> Result<TextCompletionResponse, Error> {
+    //     // Create the request body as a TextCompletionRequest object
+    //     let request_body = TextCompletionRequest {
+    //         model: model.to_string(),
+    //         prompt: prompt.to_owned(),
+    //         temperature: Some(temperature),
+    //         max_tokens: Some(max_tokens),
+    //         ..Default::default()
+    //     };
+
+    //     // Send the request using the post_request function
+    //     let response = self
+    //         .post_request("completions", to_value(&request_body).unwrap())
+    //         .await?;
+    //     info!("Response: {:?}", response);
+
+    //     // Deserialize the response body as a TextCompletionResponse object
+    //     let completion_response: TextCompletionResponse = response.json().await?;
+
+    //     // Return the TextCompletionResponse object
+    //     Ok(completion_response)
+    // }
+    //
+    //
     pub async fn send_text(
         &self,
         model: &ModelId,
         prompt: &str,
-        temperature: f64,
+        temperature: i32,
         max_tokens: i32,
-    ) -> Result<TextCompletionResponse, Error> {
-        // Create the request body as a TextCompletionRequest object
-        let request_body = TextCompletionRequest {
-            model: model.to_string(),
-            prompt: prompt.to_owned(),
-            temperature: Some(temperature),
-            max_tokens: Some(max_tokens),
-            ..Default::default()
-        };
+    ) -> Result<String, Error> {
+        // Create the request body as a JSON object
+        let request_body = json!({
+            "model": model,
+            "prompt": prompt,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+        });
 
-        // Send the request using the post_request function
+        // Send the request
         let response = self
-            .post_request("completions", to_value(&request_body).unwrap())
+            .client
+            .post("https://api.openai.com/v1/completions")
+            .header(CONTENT_TYPE, HeaderValue::from_static("application/json"))
+            .json(&request_body)
+            .send()
             .await?;
-        info!("Response: {:?}", response);
 
-        // Deserialize the response body as a TextCompletionResponse object
-        let completion_response: TextCompletionResponse = response.json().await?;
+        // Get the response body
+        let body = response.text().await?;
 
-        // Return the TextCompletionResponse object
-        Ok(completion_response)
+        // Return the response body as a String
+        Ok(body)
     }
 }
 
