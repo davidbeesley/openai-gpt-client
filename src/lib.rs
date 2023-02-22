@@ -24,10 +24,6 @@
 //!     let max_tokens = 1000;
 //!
 //!     let res = client.send_text(model, prompt, max_tokens).await?;
-//!     println!("Response: {:#?}", res);
-//!     println!("Response:\n{}", res);
-//!     let res = client.send_text(model, prompt, max_tokens).await?;
-//!     println!("Response: {:#?}", res);
 //!     println!("Response:\n{}", res);
 //!
 //!     Ok(())
