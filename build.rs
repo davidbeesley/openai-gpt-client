@@ -10,7 +10,18 @@ const PREFIX: &str = r#"
 pub enum ModelId {
 "#;
 
+const MIDDLE: &str = r#"
+}
+
+impl core::fmt::Display for ModelId {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+"#;
+
 const SUFFIX: &str = r#"
+        };
+        write!(f, "{}", s)
+    }
 }"#;
 
 #[derive(Debug, Deserialize)]
@@ -55,35 +66,47 @@ fn main() {
 
     let mut inputs = model_list
         .data
-        .into_iter()
-        .map(|model| model.id)
+        .iter()
+        .map(|model| model.id.clone())
         .collect::<Vec<String>>();
     inputs.sort();
 
-    let code = generate_code(&inputs);
+    let enum_code = generate_enum(&inputs);
+    let display_code = generate_display(&inputs);
     let mut file = File::create("src/model_variants.rs").expect("Failed to create file");
     write!(file, "{}", PREFIX).expect("Failed to write to file");
-    write!(file, "{}", code).expect("Failed to write to file");
+    write!(file, "{}", enum_code).expect("Failed to write to file");
+    write!(file, "{}", MIDDLE).expect("Failed to write to file");
+    write!(file, "{}", display_code).expect("Failed to write to file");
     write!(file, "{}", SUFFIX).expect("Failed to write to file");
 }
 
-fn generate_code(inputs: &[String]) -> String {
+fn generate_enum(inputs: &[String]) -> String {
     inputs
         .iter()
         .enumerate()
-        .map(|(i, input)| {
+        .map(|(_, input)| {
             println!("{}", input);
             let id = input.to_owned();
             let id = id.replace(".", "PERIOD");
             let id = id.replace(":", "COLON");
-            format!(
-                "#[serde(rename = \"{}\")]\n{}{}{}",
-                input,
-                id.to_case(Case::Pascal),
-                "",
-                if i < inputs.len() - 1 { "," } else { "" }
-            )
+            format!("{},\n", id.to_case(Case::Pascal),)
         })
         .collect::<Vec<String>>()
-        .join("\n")
+        .join("")
+}
+
+fn generate_display(inputs: &[String]) -> String {
+    inputs
+        .iter()
+        .enumerate()
+        .map(|(_, input)| {
+            println!("{}", input);
+            let id = input.to_owned();
+            let id = id.replace(".", "PERIOD");
+            let id = id.replace(":", "COLON");
+            format!("ModelId::{} => \"{input}\",\n", id.to_case(Case::Pascal))
+        })
+        .collect::<Vec<String>>()
+        .join("")
 }

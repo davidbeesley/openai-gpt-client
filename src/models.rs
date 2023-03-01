@@ -46,12 +46,6 @@ pub async fn get_models() -> Result<Vec<Model>, reqwest::Error> {
     Ok(response)
 }
 
-impl Display for ModelId {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self)
-    }
-}
-
 impl Default for ModelId {
     fn default() -> Self {
         ModelId::TextAda001
