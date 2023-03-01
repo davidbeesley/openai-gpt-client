@@ -90,11 +90,27 @@ fn generate_enum(inputs: &[String]) -> String {
             let id = input.to_owned();
             let id = id.replace(".", "PERIOD");
             let id = id.replace(":", "COLON");
-            format!("{},\n", id.to_case(Case::Pascal),)
+            let id = id.to_case(Case::Pascal);
+            format!("#[serde(rename = \"{0}\")]\n{1},\n", input, id)
         })
         .collect::<Vec<String>>()
         .join("")
 }
+
+// fn generate_enum(inputs: &[String]) -> String {
+//     inputs
+//         .iter()
+//         .enumerate()
+//         .map(|(_, input)| {
+//             println!("{}", input);
+//             let id = input.to_owned();
+//             let id = id.replace(".", "PERIOD");
+//             let id = id.replace(":", "COLON");
+//             format!("{},\n", id.to_case(Case::Pascal),)
+//         })
+//         .collect::<Vec<String>>()
+//         .join("")
+// }
 
 fn generate_display(inputs: &[String]) -> String {
     inputs
