@@ -1,7 +1,7 @@
 use log::info;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE};
 use reqwest::{Client, Error, Response};
-use serde_json::to_value;
+use serde_json::{json, to_value};
 
 use crate::conversations::{TextCompletionRequest, TextCompletionResponse};
 use crate::model_variants::ModelId;

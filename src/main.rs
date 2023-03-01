@@ -21,10 +21,7 @@ Human: You are a college professor. You are writing a textbook on Computer Scien
 AI: "#;
     let max_tokens = 1000;
 
-    let res = client.send_text(model, prompt, max_tokens).await?;
-    println!("Response: {:#?}", res);
-    println!("Response:\n{}", res);
-    let res = client.send_text(model, prompt, max_tokens).await?;
+    let res = client.send_text(model, prompt, 0, max_tokens).await?;
     println!("Response: {:#?}", res);
     println!("Response:\n{}", res);
 
