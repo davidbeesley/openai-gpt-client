@@ -1,4 +1,7 @@
-use std::collections::{HashMap, VecDeque};
+use std::{
+    collections::{HashMap, VecDeque},
+    fmt::Formatter,
+};
 
 use log::info;
 use serde::{Deserialize, Serialize};
@@ -29,11 +32,11 @@ pub struct ChatRequest {
 
 #[derive(Debug, Deserialize)]
 pub struct ChatResponse {
-    pub id: String,
-    pub object: String,
-    pub created: i32,
+    pub id: Option<String>,
+    pub object: Option<String>,
+    pub created: Option<i32>,
     pub choices: Vec<ChatCompletionChoice>,
-    pub usage: ChatCompletionUsage,
+    pub usage: Option<ChatCompletionUsage>,
 }
 #[derive(Debug, Deserialize)]
 pub struct ChatCompletionUsage {
@@ -56,10 +59,22 @@ pub enum Role {
     Assistant,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Deserialize, Serialize, Clone)]
 pub struct ChatMessage {
     pub role: Role,
     pub content: String,
+}
+
+impl std::fmt::Debug for ChatMessage {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let content = if self.content.len() > 30 {
+            // get a substring to make sure not to cross a unicode boundary
+            self.content.chars().take(30).collect::<String>()
+        } else {
+            self.content.clone()
+        };
+        write!(f, "{:?}: {}", self.role, content)
+    }
 }
 
 #[derive(Debug)]

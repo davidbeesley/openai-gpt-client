@@ -1,12 +1,12 @@
 use std::{
     env,
-    io::{self, Read, Write},
+    io::{self, Write},
 };
 
 use chatgpt::{
     chat::{ChatHistory, ChatMessage, Role},
     chat_roles::{
-        language_teacher::{Language::French, LanguageTeacher},
+        language_teacher::{Language, LanguageTeacher},
         ChatRole,
     },
     client::{ClientProfile, OpenAiClient},
@@ -47,8 +47,8 @@ async fn chat_with_ai() -> Result<(), GptError> {
     let api_key = env::var("OPENAI_API_KEY").unwrap();
     let client = OpenAiClient::new(&api_key, ClientProfile::Chat);
     let model = ModelId::Gpt3Period5Turbo;
-    let max_tokens = 500;
-    let chat_role = LanguageTeacher::new(French);
+    let max_tokens = 1300;
+    let chat_role = LanguageTeacher::new(Language::Spanish);
     let mut chat_history = ChatHistory::new(Some(chat_role.get_prompt()));
     chat_history.add_initial_messages(chat_role.get_initial_messages());
     print!("AI: ");

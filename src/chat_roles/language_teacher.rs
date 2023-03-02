@@ -2,6 +2,9 @@ use crate::chat::{ChatMessage, Role};
 
 use super::ChatRole;
 
+const REPEAT_PROMPT: &str = "Please repeat what the student said.";
+const RESPOND_PROMPT: &str = "Please respond to what the student said.";
+
 pub struct LanguageTeacher {
     pub language: Language,
 }
@@ -9,23 +12,41 @@ impl LanguageTeacher {
     pub fn new(language: Language) -> Self {
         Self { language }
     }
+
+    pub fn get_repeat_prompt() -> ChatMessage {
+        ChatMessage {
+            role: Role::System,
+            content: REPEAT_PROMPT.to_owned(),
+        }
+    }
+
+    pub fn get_respond_prompt() -> ChatMessage {
+        ChatMessage {
+            role: Role::System,
+            content: RESPOND_PROMPT.to_owned(),
+        }
+    }
 }
 
 impl ChatRole for LanguageTeacher {
     fn get_prompt(&self) -> String {
         let name = self.language.get_english_name();
         format!(
-            r#"You are a {} language teacher. You are tutoring a student using chat. The student is a beginner, so on occassion you need to provide support in English. You will always correct the student's {} grammar and spelling before responding.
-            You are 25 years old, female, kind, attractive, and enthusiastic. You enjoy flirting with the student but you make sure to not cross professional boundaries too far.
-            The schedule for the day is as follows:
-            1. Prompt the student for the theme of the day. Please present a list of 10 interesting themes and wait for the student to choose one. Choose themes that would be useful for a beginner.
-            2. Give the student a list of 10 {} words that are related to the theme. Please present the list in a table formatted using markdown.
-                The table is formatted as follows: Word, Example Sentence ({}), Example Sentence (English).
-            3. For the next stage of the lesson, you generate a 3 paragraph story using the theme and the words. The story should be written in {}.
-            4. You will ask to the student 3 reading comprehension questions about the story one at a time and the student will respond in {}.
-            5. You will repeat giving the student stories and asking questions until the student is done with the lesson.
-            "#,
-            name, name, name, name, name, name
+            r#"You are a {name} language teacher named {}. You are tutoring a student using chat. The student is a beginner. The student is 30 years old and is name is Dave.
+You will always be prompted to repeat what the student said (with corrections) before responding.
+You are 25 years old, female, kind, and enthusiastic.
+The schedule for the day is as follows:
+1. Prompt the student for the theme of the day. Please present a list of 10 interesting themes and wait for the student to choose one. Choose themes that would be useful for a beginner.
+2. Give the student a list of 10 {name} words that are related to the theme. Please present the list in a table formatted using markdown.
+    The table is formatted as follows: Word, Translation,
+3. For the next stage of the lesson, you generate a 3 paragraph story using the theme and the words. The story should be written in {name}.
+4. You will ask the student a reading comprehension question about the story.
+5. Repeat from the beginning.
+
+You will only speak english when providing a translation. Otherwise, you will speak in {name}.
+
+You always finish by asking the user a question"#,
+            self.language.get_name(),
         )
     }
     fn get_initial_messages(&self) -> Vec<ChatMessage> {
@@ -34,35 +55,11 @@ impl ChatRole for LanguageTeacher {
 }
 
 pub enum Language {
+    English,
     French,
     Spanish,
     Portuguese,
-    English,
 }
-
-const ENGLISH_PROMPTS: [&'static str; 4] = ["Hi, welcome to your class for English. How are you doing today?",
-"I doing well. How you doing?",
-"Correction: \"I am doing well. How are you doing?\"\n\nAre you ready for me to present you with the options for the theme of the day?",
-"Yes, I am ready."
-];
-
-const FRENCH_PROMPTS: [&'static str; 4] = ["Salut, bienvenue à votre cours de français. Comment allez-vous aujourd'hui ?",
-"Je vais bien. Et toi ?",
-"Correction: \"Et vous ?\"\n\nÊtes-vous prêt(e) pour que je vous présente les options pour le thème du jour ?",
-"Oui, je suis prêt(e)."
-];
-
-const SPANISH_PROMPTS: [&'static str; 4] = ["Hola, bienvenido(a) a tu clase de español. ¿Cómo estás hoy?",
-"Estoy bien. ¿Y tú?",
-"Corrección: \"¿Y usted?\"\n\n¿Estás listo(a) para que te presente las opciones para el tema del día?",
-"Sí, estoy listo(a)."
-];
-
-const PORTUGUESE_PROMPTS: [&'static str; 4] = ["Olá, bem-vindo(a) à sua aula de português. Como você está hoje?",
-"Estou bem. E você?",
-"Correção: \"E o senhor/ a senhora?\"\n\nVocê está pronto(a) para que eu apresente as opções para o tema do dia?",
-"Sim, estou pronto(a)."
-];
 
 impl Language {
     pub fn get_english_name(&self) -> &'static str {
@@ -73,30 +70,121 @@ impl Language {
             Language::Portuguese => "Portuguese",
         }
     }
-    pub fn get_initial_messages(&self) -> Vec<ChatMessage> {
-        let mut messages = vec![];
-        for (i, prompt) in self.get_prompts().iter().enumerate() {
-            let is_assistant = i % 2 == 0;
-            let sender = if is_assistant {
-                Role::Assistant
-            } else {
-                Role::User
-            };
-            let message = ChatMessage {
-                role: sender,
-                content: prompt.to_string(),
-            };
-            messages.push(message);
-        }
-        messages
-    }
 
-    pub fn get_prompts(&self) -> [&'static str; 4] {
+    pub fn get_name(&self) -> &'static str {
         match self {
-            Language::English => ENGLISH_PROMPTS,
-            Language::French => FRENCH_PROMPTS,
-            Language::Spanish => SPANISH_PROMPTS,
-            Language::Portuguese => PORTUGUESE_PROMPTS,
+            Language::English => "Susan",
+            Language::French => "Marie",
+            Language::Spanish => "Sofia",
+            Language::Portuguese => "Maria",
         }
+    }
+    pub fn get_initial_messages(&self) -> Vec<ChatMessage> {
+        let prompt = match self {
+            Language::English => &ENGLISH_PROMPTS,
+            Language::French => &FRENCH_PROMPTS,
+            Language::Spanish => &SPANISH_PROMPTS,
+            Language::Portuguese => &PORTUGUESE_PROMPTS,
+        };
+        prompt
+            .iter()
+            .map(|(role, content)| ChatMessage {
+                role: *role,
+                content: content.to_string(),
+            })
+            .collect()
     }
 }
+
+pub struct ExamplePrompt {
+    assistant: &'static str,
+    user: &'static str,
+    corrected: &'static str,
+}
+
+impl From<&ExamplePrompt> for Vec<ChatMessage> {
+    fn from(prompt: &ExamplePrompt) -> Self {
+        vec![
+            ChatMessage {
+                role: Role::Assistant,
+                content: prompt.assistant.to_owned(),
+            },
+            ChatMessage {
+                role: Role::User,
+                content: prompt.user.to_owned(),
+            },
+            ChatMessage {
+                role: Role::System,
+                content: "Please repeat what the user said with corrections.".to_owned(),
+            },
+            ChatMessage {
+                role: Role::Assistant,
+                content: prompt.corrected.to_owned(),
+            },
+        ]
+    }
+}
+
+const ENGLISH_PROMPTS: [(Role, &'static str); 10] = [
+    (Role::Assistant, "Good morning, how are you doing today?"),
+    (Role::User, "You am doing good"),
+    (Role::System, REPEAT_PROMPT),
+    (Role::Assistant, "I am doing good"),
+    (Role::System, RESPOND_PROMPT),
+    (
+        Role::Assistant,
+        "That's great to hear. Are you ready for me to suggest 10 themes for today?",
+    ),
+    (Role::User, "Yes, I ready"),
+    (Role::System, REPEAT_PROMPT),
+    (Role::Assistant, "Yes, I am ready"),
+    (Role::System, RESPOND_PROMPT),
+];
+
+const FRENCH_PROMPTS: [(Role, &'static str); 10] = [
+    (Role::Assistant, "Bonjour, comment allez-vous aujourd'hui ?"),
+    (Role::User, "Je ves ben."),
+    (Role::System, REPEAT_PROMPT),
+    (Role::Assistant, "Je vais bien."),
+    (Role::System, RESPOND_PROMPT),
+    (
+        Role::Assistant,
+        "C'est formidable de l'entendre. Êtes-vous prêt pour que je suggère 10 thèmes pour aujourd'hui ?",
+    ),
+    (Role::User, "Oui, suis prêt."),
+    (Role::System, REPEAT_PROMPT),
+    (Role::Assistant, "Oui, je suis prêt."),
+    (Role::System, RESPOND_PROMPT),
+];
+
+const SPANISH_PROMPTS: [(Role, &'static str); 10] = [
+    (Role::Assistant, "Buenos días, ¿cómo estás hoy?"),
+    (Role::User, "Estoy bueno."),
+    (Role::System, REPEAT_PROMPT),
+    (Role::Assistant, "Estoy bien."),
+    (Role::System, RESPOND_PROMPT),
+    (
+        Role::Assistant,
+        "Es genial escuchar eso. ¿Estás listo para que te sugiera 10 temas para hoy?",
+    ),
+    (Role::User, "Si, estoy listo."),
+    (Role::System, REPEAT_PROMPT),
+    (Role::Assistant, "Sí, estoy listo."),
+    (Role::System, RESPOND_PROMPT),
+];
+
+const PORTUGUESE_PROMPTS: [(Role, &'static str); 10] = [
+    (Role::Assistant, "Bom dia, como você está hoje?"),
+    (Role::User, "Estoy bem."),
+    (Role::System, REPEAT_PROMPT),
+    (Role::Assistant, "Estou bem."),
+    (Role::System, RESPOND_PROMPT),
+    (
+        Role::Assistant,
+        "É ótimo ouvir isso. Você está pronto para eu sugerir 10 temas para hoje?",
+    ),
+    (Role::User, "Sim, estou listo."),
+    (Role::System, REPEAT_PROMPT),
+    (Role::Assistant, "Sim, estou pronto."),
+    (Role::System, RESPOND_PROMPT),
+];
