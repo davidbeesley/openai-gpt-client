@@ -13,7 +13,7 @@ use chatgpt::{
     model_variants::ModelId,
     GptError,
 };
-use log::info;
+use log::{info, warn};
 
 #[tokio::main]
 async fn main() -> Result<(), GptError> {
@@ -48,7 +48,7 @@ async fn chat_with_ai() -> Result<(), GptError> {
     let client = OpenAiClient::new(&api_key, ClientProfile::Chat);
     let model = ModelId::Gpt3Period5Turbo;
     let max_tokens = 1300;
-    let chat_role = LanguageTeacher::new(Language::Spanish);
+    let chat_role = LanguageTeacher::new(Language::French);
     let mut chat_history = ChatHistory::new(Some(chat_role.get_prompt()));
     chat_history.add_initial_messages(chat_role.get_initial_messages());
     print!("AI: ");
@@ -65,8 +65,8 @@ async fn chat_with_ai() -> Result<(), GptError> {
 
         // Get input from user
         let mut input = String::new();
-        println!("You: ");
-        // flush stdout
+        print!("You: ");
+        io::stdout().flush().unwrap();
         // io::stdin().read_to_string(&mut input)?;
         io::stdin().read_line(&mut input)?;
 
@@ -81,7 +81,8 @@ async fn chat_with_ai() -> Result<(), GptError> {
         if let Some(summary_prompt) = chat_history.summary_needed(chat_role.get_summary_prompt()) {
             info!("Summary needed:\n {:#?}", summary_prompt);
             let summary_message = client.chat(model, max_tokens, summary_prompt).await?;
-            chat_history.add_summary(summary_message.content);
+            warn!("Summary:\n {:#?}", summary_message.content);
+            chat_history.set_summary(summary_message.content);
         }
 
         // Create chat message from user input and add it to chat history

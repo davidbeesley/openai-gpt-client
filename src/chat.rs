@@ -1,7 +1,4 @@
-use std::{
-    collections::{HashMap, VecDeque},
-    fmt::Formatter,
-};
+use std::collections::{HashMap, VecDeque};
 
 use log::info;
 use serde::{Deserialize, Serialize};
@@ -11,8 +8,6 @@ use crate::{client::Stop, model_variants::ModelId};
 pub const MAX_LENGTH: usize = 6000;
 pub const SUMMARIZE_LENGTH: usize = 2000;
 
-// pub const MAX_LENGTH: usize = 600;
-// pub const SUMMARIZE_LENGTH: usize = 200;
 #[serde_with::skip_serializing_none]
 #[derive(Debug, Default, Serialize)]
 pub struct ChatRequest {
@@ -59,29 +54,17 @@ pub enum Role {
     Assistant,
 }
 
-#[derive(Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ChatMessage {
     pub role: Role,
     pub content: String,
-}
-
-impl std::fmt::Debug for ChatMessage {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let content = if self.content.len() > 30 {
-            // get a substring to make sure not to cross a unicode boundary
-            self.content.chars().take(30).collect::<String>()
-        } else {
-            self.content.clone()
-        };
-        write!(f, "{:?}: {}", self.role, content)
-    }
 }
 
 #[derive(Debug)]
 pub struct ChatHistory {
     queue: VecDeque<ChatMessage>,
     prompt_message: Option<ChatMessage>,
-    summary_messages: Vec<ChatMessage>,
+    summary_message: Option<ChatMessage>,
 }
 
 impl ChatHistory {
@@ -92,7 +75,7 @@ impl ChatHistory {
                 role: Role::System,
                 content: prompt,
             }),
-            summary_messages: Default::default(),
+            summary_message: Default::default(),
         }
     }
 
@@ -109,7 +92,7 @@ impl ChatHistory {
         if let Some(prompt_message) = &self.prompt_message {
             selected_messages.push(prompt_message.clone());
         }
-        selected_messages.extend(self.summary_messages.iter().cloned());
+        selected_messages.extend(self.summary_message.iter().cloned());
         let mut current_length = 0;
         while current_length < SUMMARIZE_LENGTH {
             if let Some(message) = self.queue.pop_front() {
@@ -136,7 +119,7 @@ impl ChatHistory {
         if let Some(prompt_message) = &self.prompt_message {
             messages.push(prompt_message.clone());
         }
-        messages.extend(self.summary_messages.iter().cloned());
+        messages.extend(self.summary_message.iter().cloned());
         messages.extend(self.queue.iter().cloned());
         info!(
             "Length of history: {}",
@@ -148,14 +131,11 @@ impl ChatHistory {
         messages
     }
 
-    pub fn add_summary(&mut self, summary_message: String) {
-        self.summary_messages.push(ChatMessage {
+    pub fn set_summary(&mut self, summary_message: String) {
+        info!("Set summary message:\n {}", summary_message);
+        self.summary_message =Some( ChatMessage {
             role: Role::System,
-            content: format!("The conversation grew too big to keep in memory. This is a summary of part of the converstaion that was removed. All summary: {}", summary_message),
+            content: format!("The conversation grew too big to keep in memory. This is a summary of part of the converstaion that was removed provided by the assistant. Summary {}", summary_message),
         });
-        info!(
-            "Added summary message:\n {}",
-            self.summary_messages.last().unwrap().content
-        );
     }
 }
