@@ -74,14 +74,14 @@ impl OpenAiClient {
         let mut headers = HeaderMap::new();
         headers.insert(
             AUTHORIZATION,
-            HeaderValue::from_str(&format!("Bearer {}", api_key)).unwrap(),
+            HeaderValue::from_str(&format!("Bearer {api_key}")).unwrap(),
         );
         headers
     }
 
     #[allow(dead_code)]
     async fn get_request(&self, endpoint: &str) -> Result<Response, Error> {
-        let url = format!("https://api.openai.com/v1/{}", endpoint);
+        let url = format!("https://api.openai.com/v1/{endpoint}");
 
         self.client.get(&url).send().await
     }
@@ -91,7 +91,7 @@ impl OpenAiClient {
         endpoint: &str,
         body: serde_json::Value,
     ) -> Result<Response, Error> {
-        let url = format!("https://api.openai.com/v1/{}", endpoint);
+        let url = format!("https://api.openai.com/v1/{endpoint}");
 
         // Send the request
         let response = self

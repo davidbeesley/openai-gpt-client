@@ -226,6 +226,6 @@ impl core::fmt::Display for ModelId {
             ModelId::TextSimilarityDavinci001 => "text-similarity-davinci-001",
             ModelId::Whisper1 => "whisper-1",
         };
-        write!(f, "{}", s)
+        write!(f, "{s}")
     }
 }
