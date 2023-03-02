@@ -45,9 +45,3 @@ pub async fn get_models() -> Result<Vec<Model>, reqwest::Error> {
         .await?;
     Ok(response)
 }
-
-impl Default for ModelId {
-    fn default() -> Self {
-        ModelId::TextAda001
-    }
-}

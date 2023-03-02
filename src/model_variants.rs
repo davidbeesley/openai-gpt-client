@@ -1,5 +1,15 @@
 #[derive(
-    Debug, Copy, Clone, serde::Deserialize, serde::Serialize, Ord, PartialOrd, Eq, PartialEq, Hash,
+    Default,
+    Debug,
+    Copy,
+    Clone,
+    serde::Deserialize,
+    serde::Serialize,
+    Ord,
+    PartialOrd,
+    Eq,
+    PartialEq,
+    Hash,
 )]
 pub enum ModelId {
     #[serde(rename = "ada")]
@@ -76,6 +86,7 @@ pub enum ModelId {
     DavinciSimilarity,
     #[serde(rename = "davinci:2020-05-03")]
     DavinciColon20200503,
+    #[default]
     #[serde(rename = "gpt-3.5-turbo")]
     Gpt3Period5Turbo,
     #[serde(rename = "gpt-3.5-turbo-0301")]

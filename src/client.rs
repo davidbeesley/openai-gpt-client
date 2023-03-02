@@ -63,7 +63,7 @@ pub struct OpenAiClient {
 
 impl OpenAiClient {
     pub fn new(api_key: &str, profile: ClientProfile) -> OpenAiClient {
-        let headers = Self::build_headers(&api_key);
+        let headers = Self::build_headers(api_key);
 
         let client = Client::builder().default_headers(headers).build().unwrap();
 
