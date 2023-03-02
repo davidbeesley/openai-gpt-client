@@ -1,4 +1,7 @@
-use std::{env, io};
+use std::{
+    env,
+    io::{self, Read},
+};
 
 use chatgpt::{
     chat::{ChatHistory, ChatMessage, Role},
@@ -42,22 +45,50 @@ async fn chat_with_ai() -> Result<(), GptError> {
     let max_tokens = 50;
     let mut chat_history = ChatHistory::new();
 
+    // loop {
+    //     // Get input from user
+    //     let mut input = String::new();
+    //     println!("You: ");
+    //     io::stdin().read_line(&mut input)?;
+    //     let input = input.trim();
+
+    //     // If user wants to exit, break the loop
+    //     if input.eq_ignore_ascii_case("exit") {
+    //         break;
+    //     }
+
+    //     // Create chat message from user input and add it to chat history
+    //     let user_message = ChatMessage {
+    //         role: Role::User,
+    //         content: input.to_string(),
+    //     };
+    //     chat_history.add_message(user_message);
+
+    //     // Chat with AI
+    //     let ai_message = client
+    //         .chat(model, max_tokens, chat_history.get_history().to_vec())
+    //         .await?;
+
+    //     chat_history.add_message(ai_message.clone());
+
+    //     // Print AI response
+    //     println!("AI: {}", ai_message.content);
+    // }
     loop {
         // Get input from user
         let mut input = String::new();
         println!("You: ");
-        io::stdin().read_line(&mut input)?;
-        let input = input.trim();
+        io::stdin().read_to_string(&mut input)?;
 
         // If user wants to exit, break the loop
-        if input.eq_ignore_ascii_case("exit") {
+        if input.is_empty() || input.eq_ignore_ascii_case("exit\n") {
             break;
         }
 
         // Create chat message from user input and add it to chat history
         let user_message = ChatMessage {
             role: Role::User,
-            content: input.to_string(),
+            content: input.trim().to_string(),
         };
         chat_history.add_message(user_message);
 
