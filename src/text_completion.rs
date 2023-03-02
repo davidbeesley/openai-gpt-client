@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::model_variants::ModelId;
+use crate::{client::Stop, model_variants::ModelId};
 
 #[serde_with::skip_serializing_none]
 #[derive(Debug, Default, Deserialize, Serialize)]
@@ -18,7 +18,7 @@ pub struct TextCompletionRequest {
     pub stream: Option<bool>,
     pub logprobs: Option<i32>,
     pub echo: Option<bool>,
-    pub stop: Option<Value>,
+    pub stop: Option<Stop>,
     pub presence_penalty: Option<f64>,
     pub frequency_penalty: Option<f64>,
     pub best_of: Option<i32>,
@@ -55,7 +55,7 @@ pub struct TextCompletionChoice {
     pub text: String,
     pub index: i32,
     pub logprobs: Option<TextCompletionLogprobs>,
-    pub finish_reason: String,
+    pub finish_reason: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
