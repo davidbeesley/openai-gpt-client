@@ -5,7 +5,10 @@ use std::{
 
 use chatgpt::{
     chat::{ChatHistory, ChatMessage, Role},
-    chat_roles::{language_teacher::LanguageTeacher, ChatRole},
+    chat_roles::{
+        language_teacher::{Language::French, LanguageTeacher},
+        ChatRole,
+    },
     client::{ClientProfile, OpenAiClient},
     model_variants::ModelId,
     GptError,
@@ -32,7 +35,7 @@ Human: Hello, who are you?
 AI: I am an AI created by OpenAI. How can I help you today?
 Human: You are a college professor. You are writing a textbook on Computer Science. Please give the table on contents for this book. Please include 10 chapters
 AI: "#;
-    let max_tokens = 1000;
+    let max_tokens = 200;
 
     let res = client.completion(model, prompt, max_tokens).await?;
     println!("Response:\n{}", res);
@@ -45,8 +48,9 @@ async fn chat_with_ai() -> Result<(), GptError> {
     let client = OpenAiClient::new(&api_key, ClientProfile::Chat);
     let model = ModelId::Gpt3Period5Turbo;
     let max_tokens = 500;
-    let chat_role = LanguageTeacher::new("French");
+    let chat_role = LanguageTeacher::new(French);
     let mut chat_history = ChatHistory::new(Some(chat_role.get_prompt()));
+    chat_history.add_initial_messages(chat_role.get_initial_messages());
     loop {
         // Chat with AI
         let ai_message = client

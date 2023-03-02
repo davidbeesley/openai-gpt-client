@@ -5,11 +5,11 @@ use serde::{Deserialize, Serialize};
 
 use crate::{client::Stop, model_variants::ModelId};
 
-// pub const MAX_LENGTH: usize = 6000;
-// pub const SUMMARIZE_LENGTH: usize = 2000;
+pub const MAX_LENGTH: usize = 6000;
+pub const SUMMARIZE_LENGTH: usize = 2000;
 
-pub const MAX_LENGTH: usize = 600;
-pub const SUMMARIZE_LENGTH: usize = 200;
+// pub const MAX_LENGTH: usize = 600;
+// pub const SUMMARIZE_LENGTH: usize = 200;
 #[serde_with::skip_serializing_none]
 #[derive(Debug, Default, Serialize)]
 pub struct ChatRequest {
@@ -79,6 +79,10 @@ impl ChatHistory {
             }),
             summary_messages: Default::default(),
         }
+    }
+
+    pub fn add_initial_messages(&mut self, messages: Vec<ChatMessage>) {
+        self.queue.extend(messages)
     }
 
     pub fn summary_needed(&mut self, summary_prompt: ChatMessage) -> Option<Vec<ChatMessage>> {
