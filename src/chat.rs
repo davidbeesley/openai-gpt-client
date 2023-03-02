@@ -1,6 +1,6 @@
 use std::collections::{HashMap, VecDeque};
 
-use log::info;
+use log::{debug, info};
 use serde::{Deserialize, Serialize};
 
 use crate::{client::Stop, model_variants::ModelId};
@@ -55,4 +55,91 @@ pub enum Role {
 pub struct ChatMessage {
     pub role: Role,
     pub content: String,
+}
+
+#[derive(Debug)]
+pub struct ChatHistory {
+    queue: VecDeque<ChatMessage>,
+    prompt_message: Option<ChatMessage>,
+    summary_message: Option<ChatMessage>,
+}
+
+impl ChatHistory {
+    pub fn new(prompt_message: Option<String>) -> Self {
+        ChatHistory {
+            queue: Default::default(),
+            prompt_message: prompt_message.map(|prompt| ChatMessage {
+                role: Role::System,
+                content: prompt,
+            }),
+            summary_message: Default::default(),
+        }
+    }
+
+    pub fn add_initial_messages(&mut self, messages: Vec<ChatMessage>) {
+        self.queue.extend(messages)
+    }
+
+    /// Remove messages to summarize the conversation if it is too long
+    /// This is a naive implementation that just removes the oldest messages
+    pub fn summary_needed(
+        &mut self,
+        summary_prompt: ChatMessage,
+        max_length: usize,
+        summarize_length: usize,
+    ) -> Option<Vec<ChatMessage>> {
+        let total_length: usize = self.queue.iter().map(|message| message.content.len()).sum();
+        if total_length < max_length - summarize_length {
+            return None;
+        }
+        let mut selected_messages = vec![];
+        if let Some(prompt_message) = &self.prompt_message {
+            selected_messages.push(prompt_message.clone());
+        }
+        selected_messages.extend(self.summary_message.iter().cloned());
+        let mut current_length = 0;
+        while current_length < summarize_length {
+            if let Some(message) = self.queue.pop_front() {
+                current_length += message.content.len();
+                selected_messages.push(message);
+            } else {
+                break;
+            }
+        }
+        selected_messages.push(summary_prompt);
+        Some(selected_messages)
+    }
+
+    pub fn add_message(&mut self, message: ChatMessage) {
+        self.queue.push_back(message);
+    }
+
+    pub fn clear_history(&mut self) {
+        self.queue.clear();
+    }
+
+    pub fn get_history(&self) -> Vec<ChatMessage> {
+        let mut messages = vec![];
+        if let Some(prompt_message) = &self.prompt_message {
+            messages.push(prompt_message.clone());
+        }
+        messages.extend(self.summary_message.iter().cloned());
+        messages.extend(self.queue.iter().cloned());
+        debug!(
+            "Length of history: {}",
+            messages
+                .iter()
+                .map(|message| message.content.len())
+                .sum::<usize>()
+        );
+        messages
+    }
+
+    pub fn set_summary(&mut self, summary_message: String) {
+        info!("Set summary message:\n {}", summary_message);
+        self.summary_message = Some(ChatMessage {
+            role: Role::System,
+            content: summary_message,
+        });
+    }
 }
