@@ -5,10 +5,12 @@ use std::{
 
 use chatgpt::{
     chat::{ChatHistory, ChatMessage, Role},
+    chat_roles::{language_teacher::LanguageTeacher, ChatRole},
     client::{ClientProfile, OpenAiClient},
     model_variants::ModelId,
     GptError,
 };
+use log::info;
 
 #[tokio::main]
 async fn main() -> Result<(), GptError> {
@@ -42,26 +44,10 @@ async fn chat_with_ai() -> Result<(), GptError> {
     let api_key = env::var("OPENAI_API_KEY").unwrap();
     let client = OpenAiClient::new(&api_key, ClientProfile::Chat);
     let model = ModelId::Gpt3Period5Turbo;
-    let max_tokens = 50;
-    let mut chat_history = ChatHistory::new();
+    let max_tokens = 500;
+    let chat_role = LanguageTeacher::new("French");
+    let mut chat_history = ChatHistory::new(Some(chat_role.get_prompt()));
     loop {
-        // Get input from user
-        let mut input = String::new();
-        println!("You: ");
-        io::stdin().read_to_string(&mut input)?;
-
-        // If user wants to exit, break the loop
-        if input.is_empty() || input.eq_ignore_ascii_case("exit\n") {
-            break;
-        }
-
-        // Create chat message from user input and add it to chat history
-        let user_message = ChatMessage {
-            role: Role::User,
-            content: input.trim().to_string(),
-        };
-        chat_history.add_message(user_message);
-
         // Chat with AI
         let ai_message = client
             .chat(model, max_tokens, chat_history.get_history().to_vec())
@@ -71,6 +57,31 @@ async fn chat_with_ai() -> Result<(), GptError> {
 
         // Print AI response
         println!("AI: {}", ai_message.content);
+
+        // Get input from user
+        let mut input = String::new();
+        println!("You: ");
+        io::stdin().read_to_string(&mut input)?;
+        // io::stdin().read_line(&mut input)?;
+
+        // If user wants to exit, break the loop
+        if input.is_empty() || input.eq_ignore_ascii_case("exit\n") {
+            break;
+        }
+
+        // Check if the chat history requires a summary
+        if let Some(summary_prompt) = chat_history.summary_needed(chat_role.get_summary_prompt()) {
+            info!("Summary needed:\n {:#?}", summary_prompt);
+            let summary_message = client.chat(model, max_tokens, summary_prompt).await?;
+            chat_history.add_summary(summary_message.content);
+        }
+
+        // Create chat message from user input and add it to chat history
+        let user_message = ChatMessage {
+            role: Role::User,
+            content: input.trim().to_string(),
+        };
+        chat_history.add_message(user_message);
     }
 
     Ok(())

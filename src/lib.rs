@@ -1,7 +1,9 @@
 pub mod chat;
+pub mod chat_roles;
 pub mod client;
 pub mod model_variants;
 pub mod models;
+
 pub mod text_completion;
 
 use reqwest::Error as ReqwestError;
