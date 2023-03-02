@@ -17,7 +17,7 @@ pub enum ClientProfile {
 impl ClientProfile {
     pub fn get_temperature(&self) -> f32 {
         match self {
-            ClientProfile::Chat => 0.8,
+            ClientProfile::Chat => 1.3,
             ClientProfile::Code => 0.7,
         }
     }

@@ -1,6 +1,6 @@
 use std::{
     env,
-    io::{self, Read},
+    io::{self, Read, Write},
 };
 
 use chatgpt::{
@@ -51,6 +51,7 @@ async fn chat_with_ai() -> Result<(), GptError> {
     let chat_role = LanguageTeacher::new(French);
     let mut chat_history = ChatHistory::new(Some(chat_role.get_prompt()));
     chat_history.add_initial_messages(chat_role.get_initial_messages());
+    print!("AI: ");
     loop {
         // Chat with AI
         let ai_message = client
@@ -60,18 +61,21 @@ async fn chat_with_ai() -> Result<(), GptError> {
         chat_history.add_message(ai_message.clone());
 
         // Print AI response
-        println!("AI: {}", ai_message.content);
+        println!("{}", ai_message.content);
 
         // Get input from user
         let mut input = String::new();
         println!("You: ");
-        io::stdin().read_to_string(&mut input)?;
-        // io::stdin().read_line(&mut input)?;
+        // flush stdout
+        // io::stdin().read_to_string(&mut input)?;
+        io::stdin().read_line(&mut input)?;
 
         // If user wants to exit, break the loop
         if input.is_empty() || input.eq_ignore_ascii_case("exit\n") {
             break;
         }
+        print!("AI: ");
+        io::stdout().flush().unwrap();
 
         // Check if the chat history requires a summary
         if let Some(summary_prompt) = chat_history.summary_needed(chat_role.get_summary_prompt()) {
