@@ -5,6 +5,7 @@ edition = "2021"
 license = "GPL-3.0"
 authors = ["Dave Beesley <david.beesley@pm.me>"]
 repository = "https://github.com/davidbeesley/openai-gpt-client"
+description = "A simple client for OpenAI's GPT-3 API"
 
 [dependencies]
 log = "0.4.17"
