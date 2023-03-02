@@ -1,5 +1,5 @@
 [package]
-name = "chatgpt"
+name = "openai-gpt-client"
 version = "0.0.0"
 edition = "2021"
 license = "GPL-3.0"
