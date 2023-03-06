@@ -1,3 +1,4 @@
+pub mod conversation_partner;
 pub mod language_teacher;
 use crate::chat::{ChatMessage, Role};
 
